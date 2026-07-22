@@ -2,26 +2,35 @@ name: Send Telegram Messages
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Каждый день в 9:00
-  workflow_dispatch:      # Ручной запуск
+    # Каждый день в 9:00
+    - cron: '0 9 * * *'
+  
+  # Ручной запуск (через кнопку "Run workflow" в GitHub Actions)
+  workflow_dispatch:
 
 jobs:
   send:
     runs-on: ubuntu-latest
     
     steps:
+      # 1. Скачиваем код из репозитория
       - name: Checkout code
         uses: actions/checkout@v4
         
+      # 2. Устанавливаем Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           
+      # 3. Устанавливаем зависимости
       - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      - name: Run script
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      # 4. Запускаем скрипт с секретами
+      - name: Run sender script
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
