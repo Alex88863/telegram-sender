@@ -6,7 +6,6 @@ import os
 from datetime import datetime
 from telethon import TelegramClient
 from telethon.network.connection import ConnectionTcpAbridged
-import socks
 
 print(f"✅ Python: {sys.version}")
 print("=" * 50)
@@ -21,10 +20,10 @@ PHONE = os.environ.get('PHONE', "+79063443355")
 # ==========================================
 
 # ==========================================
-# НАСТРОЙКИ ВРЕМЕНИ
+# НАСТРОЙКИ ВРЕМЕНИ (МОСКОВСКОЕ ВРЕМЯ)
 # ==========================================
-START_HOUR = 9
-END_HOUR = 21
+START_HOUR = 9   # Начинаем в 9:00 по Москве
+END_HOUR = 21    # Заканчиваем в 21:00 по Москве
 # ==========================================
 
 # ==========================================
@@ -115,7 +114,7 @@ MESSAGES = [
 # ==========================================
 
 # ==========================================
-# СПИСОК КАРТИНОК (имена файлов в папке images)
+# СПИСОК КАРТИНОК
 # ==========================================
 IMAGES = ["photo1.jpg", "photo.jpg", "photo2.jpg"]
 # ==========================================
@@ -128,9 +127,17 @@ IMAGE_FOLDER = os.path.join(SCRIPT_DIR, "images")
 FRIENDS_FILE = os.path.join(SCRIPT_DIR, "friends.txt")
 # ==========================================
 
+def get_moscow_time():
+    """Возвращает текущее московское время (UTC+3)"""
+    return datetime.utcnow().replace(tzinfo=None) + timezone_offset
+
+# Создаём смещение для московского времени
+timezone_offset = time.timedelta(hours=3)
+
 def is_working_hours():
-    now = datetime.now()
-    return START_HOUR <= now.hour < END_HOUR
+    """Проверяет, сейчас рабочие часы по Москве (9:00 – 21:00)"""
+    moscow_now = datetime.utcnow() + timezone_offset
+    return START_HOUR <= moscow_now.hour < END_HOUR
 
 def get_random_message():
     return random.choice(MESSAGES)
@@ -162,12 +169,16 @@ async def main():
     print("=" * 50)
     print("🛋️  ОТПРАВКА СООБЩЕНИЙ ДРУЗЬЯМ (GitHub Actions)")
     print("=" * 50)
-    print(f"⏰ Текущее время: {datetime.now().strftime('%H:%M')}")
-    print(f"⏰ Рабочие часы: {START_HOUR}:00 – {END_HOUR}:00")
+    
+    # Московское время
+    moscow_now = datetime.utcnow() + timezone_offset
+    print(f"⏰ Московское время: {moscow_now.strftime('%H:%M')}")
+    print(f"⏰ Рабочие часы (МСК): {START_HOUR}:00 – {END_HOUR}:00")
     print(f"📁 Папка проекта: {SCRIPT_DIR}")
     
     if not is_working_hours():
-        print("⏰ Сейчас нерабочее время. Завершаю.")
+        print(f"⏰ Сейчас {moscow_now.strftime('%H:%M')} МСК — нерабочее время. Завершаю.")
+        print(f"   Скрипт работает с {START_HOUR}:00 до {END_HOUR}:00 по Москве.")
         return
     
     FRIENDS = load_friends()
@@ -176,6 +187,9 @@ async def main():
         return
     
     print(f"📬 Всего друзей: {len(FRIENDS)}")
+    print("📝 5 вариантов сообщений (случайный выбор)")
+    print("🖼️  3 картинки (случайный выбор)")
+    print("⏳ Пауза: 12-20 минут (случайно)")
     print("=" * 50)
     print()
     
@@ -201,8 +215,10 @@ async def main():
         hour_start = time.time()
         
         for idx, friend in enumerate(FRIENDS, 1):
-            if not is_working_hours():
-                print(f"\n⏰ {datetime.now().strftime('%H:%M')} - Конец рабочего дня.")
+            # Проверка времени по Москве
+            moscow_now = datetime.utcnow() + timezone_offset
+            if not (START_HOUR <= moscow_now.hour < END_HOUR):
+                print(f"\n⏰ {moscow_now.strftime('%H:%M')} МСК - Конец рабочего дня.")
                 break
             
             if sent >= 5:
