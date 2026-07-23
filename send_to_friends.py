@@ -9,20 +9,15 @@ from telethon.network.connection import ConnectionTcpAbridged
 import socks
 
 print(f"✅ Python: {sys.version}")
+print("=" * 50)
+print("⏰ Время запуска:", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 # ==========================================
-# ДАННЫЕ ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ
+# ДАННЫЕ ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ (GitHub Secrets)
 # ==========================================
 API_ID = int(os.environ.get('API_ID', 35315453))
 API_HASH = os.environ.get('API_HASH', "7f2e9bf84bc1c44452f8c743b02d08e6")
 PHONE = os.environ.get('PHONE', "+79063443355")
-
-# ==========================================
-# ПУТИ К ФАЙЛАМ
-# ==========================================
-PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
-FRIENDS_FILE = os.path.join(PROJECT_FOLDER, "friends.txt")
-IMAGE_FOLDER = os.path.join(PROJECT_FOLDER, "images")
 # ==========================================
 
 # ==========================================
@@ -119,7 +114,19 @@ MESSAGES = [
 ]
 # ==========================================
 
+# ==========================================
+# СПИСОК КАРТИНОК (имена файлов в папке images)
+# ==========================================
 IMAGES = ["photo1.jpg", "photo.jpg", "photo2.jpg"]
+# ==========================================
+
+# ==========================================
+# ПУТИ К ФАЙЛАМ
+# ==========================================
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_FOLDER = os.path.join(SCRIPT_DIR, "images")
+FRIENDS_FILE = os.path.join(SCRIPT_DIR, "friends.txt")
+# ==========================================
 
 def is_working_hours():
     now = datetime.now()
@@ -145,7 +152,7 @@ def load_friends():
                         friends.append(int(line))
                     else:
                         friends.append(line)
-        print(f"✅ Загружено {len(friends)} контактов")
+        print(f"✅ Загружено {len(friends)} контактов из friends.txt")
         return friends
     except FileNotFoundError:
         print(f"❌ Файл {FRIENDS_FILE} не найден!")
@@ -153,13 +160,14 @@ def load_friends():
 
 async def main():
     print("=" * 50)
-    print("🛋️  ОТПРАВКА СООБЩЕНИЙ ДРУЗЬЯМ")
+    print("🛋️  ОТПРАВКА СООБЩЕНИЙ ДРУЗЬЯМ (GitHub Actions)")
     print("=" * 50)
     print(f"⏰ Текущее время: {datetime.now().strftime('%H:%M')}")
     print(f"⏰ Рабочие часы: {START_HOUR}:00 – {END_HOUR}:00")
+    print(f"📁 Папка проекта: {SCRIPT_DIR}")
     
     if not is_working_hours():
-        print(f"⏰ Сейчас нерабочее время.")
+        print("⏰ Сейчас нерабочее время. Завершаю.")
         return
     
     FRIENDS = load_friends()
@@ -171,9 +179,8 @@ async def main():
     print("=" * 50)
     print()
     
-    # Прокси не используем (на Koyeb не нужно)
     client = TelegramClient(
-        os.path.join(PROJECT_FOLDER, "my_account"),
+        os.path.join(SCRIPT_DIR, "my_account"),
         API_ID,
         API_HASH,
         connection_retries=5,
@@ -239,7 +246,14 @@ async def main():
         await client.disconnect()
         
     except Exception as e:
-        print(f"\n❌ Ошибка: {e}")
+        print(f"\n❌ Критическая ошибка: {e}")
+        print("\nПРОВЕРЬТЕ:")
+        print("1. Правильно ли указаны секреты в GitHub?")
+        print("2. Есть ли файл friends.txt в репозитории?")
+        print("3. Есть ли папка images с картинками?")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n⚠️ Скрипт остановлен пользователем")
