@@ -3,7 +3,7 @@ import time
 import sys
 import random
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from telethon import TelegramClient
 from telethon.network.connection import ConnectionTcpAbridged
 
@@ -24,6 +24,7 @@ PHONE = os.environ.get('PHONE', "+79063443355")
 # ==========================================
 START_HOUR = 9   # Начинаем в 9:00 по Москве
 END_HOUR = 21    # Заканчиваем в 21:00 по Москве
+timezone_offset = timedelta(hours=3)  # UTC+3 для Москвы
 # ==========================================
 
 # ==========================================
@@ -126,13 +127,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_FOLDER = os.path.join(SCRIPT_DIR, "images")
 FRIENDS_FILE = os.path.join(SCRIPT_DIR, "friends.txt")
 # ==========================================
-
-def get_moscow_time():
-    """Возвращает текущее московское время (UTC+3)"""
-    return datetime.utcnow().replace(tzinfo=None) + timezone_offset
-
-# Создаём смещение для московского времени
-timezone_offset = time.timedelta(hours=3)
 
 def is_working_hours():
     """Проверяет, сейчас рабочие часы по Москве (9:00 – 21:00)"""
