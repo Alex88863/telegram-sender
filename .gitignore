@@ -1,0 +1,7 @@
+.vscode/
+AppData/
+Android/
+.venv/
+__pycache__/
+*.pyc
+.cache/
